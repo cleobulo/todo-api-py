@@ -1,6 +1,11 @@
 from fastapi import APIRouter, status, HTTPException
 from fastapi.encoders import jsonable_encoder
 from app.models.task import Task
+from app.models.task_create_in import TaskCreateIn
+from app.models.task_create_out import TaskCreateOut
+from app.models.task_update_in import TaskUpdateIn
+from app.models.task_update_out import TaskUpdateOut
+from app.models.task_list_out import TasksListOut
 
 router = APIRouter()
 
