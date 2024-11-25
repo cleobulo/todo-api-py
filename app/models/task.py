@@ -6,4 +6,4 @@ class Task(BaseModel):
     id: int
     title: str
     description: str
-    status: StatusTask = StatusTask.To_Do
+    status: StatusTask
