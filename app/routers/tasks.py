@@ -3,8 +3,8 @@ from fastapi.encoders import jsonable_encoder
 from app.models.task import Task
 from app.models.task_create_in import TaskCreateIn
 # from app.models.task_create_out import TaskCreateOut
-# from app.models.task_update_in import TaskUpdateIn
-# from app.models.task_update_out import TaskUpdateOut
+from app.models.task_update_in import TaskUpdateIn
+from app.models.task_update_out import TaskUpdateOut
 # from app.models.task_list_out import TasksListOut
 from app.providers.db.engine import SessionDep
 from app.providers.models.task import Task as TaskDB
@@ -32,14 +32,16 @@ async def listAllTasks(session: SessionDep, offset: int = 0, limit: Annotated[in
     tasks = session.exec(select(TaskDB).offset(offset).limit(limit)).all()
     return tasks
 
-# @router.patch("/task/{taskId}", status_code=status.HTTP_200_OK, response_model=TaskUpdateOut)
-# async def updateTask(taskId: int, task: TaskUpdateIn):
-#     for index, item in enumerate(tasksList):
-#         if taskId == item.id:
-#             taskItemStored = Task(**jsonable_encoder(item))
-#             taskUpdateData = task.model_dump(exclude_unset=True)
-#             taskUpdatedItem = taskItemStored.model_copy(update=taskUpdateData)
-#             tasksList[index] = taskUpdatedItem
-#             return taskUpdatedItem
-        
-#     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Este item não existe!")
+@router.patch("/task/{taskId}", status_code=status.HTTP_200_OK)
+async def updateTask(task_id: int, task_in: TaskUpdateIn, session: SessionDep):
+    task = session.get(TaskDB, task_id)
+    
+    if not task:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Este item não existe!")
+    
+    taskUpdateData = task_in.model_dump(exclude_unset=True)
+    task.sqlmodel_update(taskUpdateData)
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
